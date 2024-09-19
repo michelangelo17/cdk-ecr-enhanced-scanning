@@ -4,6 +4,7 @@ import { Runtime } from 'aws-cdk-lib/aws-lambda'
 import { IRepository } from 'aws-cdk-lib/aws-ecr'
 import { Provider } from 'aws-cdk-lib/custom-resources'
 import { CustomResource } from 'aws-cdk-lib'
+import * as path from 'path'
 
 export interface EnhancedScanningProps {
   repository: IRepository
@@ -14,6 +15,8 @@ export class EnhancedScanning extends Construct {
     super(scope, id)
 
     const enableScanLambda = new NodejsFunction(this, 'EnableScanLambda', {
+      entry: path.join(__dirname, 'enable-scan-lambda.ts'),
+      handler: 'handler',
       runtime: Runtime.NODEJS_20_X,
       bundling: {
         minify: true,
