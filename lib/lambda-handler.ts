@@ -52,11 +52,12 @@ export const handler = async () => {
       }),
     }
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error:', JSON.stringify(error, null, 2))
     return {
       statusCode: 500,
       body: JSON.stringify({
-        message: `Failed to enable enhanced scanning: ${error}`,
+        message: 'Failed to enable enhanced scanning',
+        errorDetails: error instanceof Error ? error.stack : String(error),
       }),
     }
   }

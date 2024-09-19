@@ -67,6 +67,11 @@ export class EnhancedScanning extends Construct {
         ],
         resources: ['*'],
         effect: Effect.ALLOW,
+        conditions: {
+          StringEqualsIfExists: {
+            'iam:AWSServiceName': 'inspector2.amazonaws.com',
+          },
+        },
       })
     )
 
