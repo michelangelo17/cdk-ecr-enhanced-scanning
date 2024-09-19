@@ -63,6 +63,7 @@ export class EnhancedScanning extends Construct {
           'inspector2:Enable',
           'inspector2:Disable',
           'inspector2:ListAccountPermissions',
+          'iam:CreateServiceLinkedRole',
         ],
         resources: ['*'],
         effect: Effect.ALLOW,
