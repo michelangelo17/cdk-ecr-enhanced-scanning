@@ -2,7 +2,6 @@ import { Construct } from 'constructs'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { Runtime } from 'aws-cdk-lib/aws-lambda'
 import { IRepository } from 'aws-cdk-lib/aws-ecr'
-import path from 'path'
 import { Provider } from 'aws-cdk-lib/custom-resources'
 import { CustomResource } from 'aws-cdk-lib'
 
@@ -15,14 +14,11 @@ export class EnhancedScanning extends Construct {
     super(scope, id)
 
     const enableScanLambda = new NodejsFunction(this, 'EnableScanLambda', {
-      entry: path.join(
-        __dirname,
-        '../src/enable-enhanced-scan-lambda/index.ts'
-      ), // Path to the Lambda handler
       runtime: Runtime.NODEJS_20_X,
       bundling: {
         minify: true,
         target: 'es2023',
+        forceDockerBundling: false, // Explicitly disable Docker bundling
       },
     })
 
