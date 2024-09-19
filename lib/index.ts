@@ -8,14 +8,14 @@ import * as fs from 'fs'
 import * as esbuild from 'esbuild'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
-export interface EcrScanFilter {
-  filter: string
-  filterType: 'WILDCARD' | 'PREFIX_MATCH'
+export interface EcrScanFilters {
+  filters: string[]
+  filterType: 'WILDCARD'
 }
 
 export interface EnhancedScanningProps {
   repository: IRepository
-  filters?: EcrScanFilter[]
+  filters?: EcrScanFilters[]
 }
 
 export class EnhancedScanning extends Construct {
@@ -36,9 +36,9 @@ export class EnhancedScanning extends Construct {
       minify: true,
     })
 
-    const defaultFilter: EcrScanFilter = {
-      filter: props.repository.repositoryName,
-      filterType: 'PREFIX_MATCH',
+    const defaultFilter: EcrScanFilters = {
+      filters: [props.repository.repositoryName],
+      filterType: 'WILDCARD',
     }
 
     const filters = props.filters || [defaultFilter]
