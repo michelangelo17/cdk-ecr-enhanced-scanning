@@ -4,6 +4,7 @@ import { IRepository } from 'aws-cdk-lib/aws-ecr'
 import { Provider } from 'aws-cdk-lib/custom-resources'
 import { CustomResource } from 'aws-cdk-lib'
 import * as path from 'path'
+import * as fs from 'fs'
 import * as esbuild from 'esbuild'
 
 export interface EnhancedScanningProps {
@@ -14,8 +15,11 @@ export class EnhancedScanning extends Construct {
   constructor(scope: Construct, id: string, props: EnhancedScanningProps) {
     super(scope, id)
 
+    // Create a temporary directory for the bundled Lambda code
+    const tmpDir = fs.mkdtempSync('/tmp/lambda-')
+    const outfile = path.join(tmpDir, 'index.js')
+
     // Bundle the Lambda function code
-    const outfile = '/tmp/bundle.js'
     esbuild.buildSync({
       entryPoints: [path.join(__dirname, 'lambda-handler.ts')],
       bundle: true,
@@ -28,7 +32,7 @@ export class EnhancedScanning extends Construct {
     const enableScanLambda = new Function(this, 'EnableScanLambda', {
       runtime: Runtime.NODEJS_20_X,
       handler: 'index.handler',
-      code: Code.fromAsset(outfile),
+      code: Code.fromAsset(tmpDir),
     })
 
     // Create a custom resource that invokes the Lambda function
