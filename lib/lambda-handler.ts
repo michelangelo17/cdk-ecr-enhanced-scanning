@@ -29,6 +29,6 @@ export const handler = async () => {
     }
   } catch (error) {
     console.error('Error enabling enhanced scanning:', error)
-    throw new Error('Failed to enable enhanced scanning')
+    throw new Error(`Failed to enable enhanced scanning: ${error}`)
   }
 }

@@ -2,7 +2,7 @@ import { Construct } from 'constructs'
 import { Function, Runtime, Code } from 'aws-cdk-lib/aws-lambda'
 import { IRepository } from 'aws-cdk-lib/aws-ecr'
 import { Provider } from 'aws-cdk-lib/custom-resources'
-import { CustomResource } from 'aws-cdk-lib'
+import { CustomResource, Duration } from 'aws-cdk-lib'
 import * as path from 'path'
 import * as fs from 'fs'
 import * as esbuild from 'esbuild'
@@ -33,6 +33,8 @@ export class EnhancedScanning extends Construct {
       runtime: Runtime.NODEJS_20_X,
       handler: 'index.handler',
       code: Code.fromAsset(tmpDir),
+      timeout: Duration.seconds(30),
+      memorySize: 256,
     })
 
     // Create a custom resource that invokes the Lambda function
