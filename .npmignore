@@ -1,6 +1,9 @@
 *.ts
 !*.d.ts
 
+# Keep the src directory
+!src
+
 # CDK asset staging directory
 .cdk.staging
 cdk.out
