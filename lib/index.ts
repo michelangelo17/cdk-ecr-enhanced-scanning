@@ -1,21 +1,48 @@
-// import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { Construct } from 'constructs'
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
+import { Runtime } from 'aws-cdk-lib/aws-lambda'
+import { IRepository } from 'aws-cdk-lib/aws-ecr'
+import path from 'path'
+import { Provider } from 'aws-cdk-lib/custom-resources'
+import { CustomResource } from 'aws-cdk-lib'
 
-export interface CdkEcrEnhancedScanningProps {
-  // Define construct properties here
+export interface EnhancedScanningProps {
+  repository: IRepository
 }
 
-export class CdkEcrEnhancedScanning extends Construct {
+export class EnhancedScanning extends Construct {
+  constructor(scope: Construct, id: string, props: EnhancedScanningProps) {
+    super(scope, id)
 
-  constructor(scope: Construct, id: string, props: CdkEcrEnhancedScanningProps = {}) {
-    super(scope, id);
+    const enableScanLambda = new NodejsFunction(this, 'EnableScanLambda', {
+      entry: path.join(
+        __dirname,
+        '../src/enable-enhanced-scan-lambda/index.ts'
+      ), // Path to the Lambda handler
+      runtime: Runtime.NODEJS_20_X,
+      bundling: {
+        minify: true,
+        target: 'es2023',
+      },
+    })
 
-    // Define construct contents here
+    // Create a custom resource that invokes the Lambda function
+    const enableScanCustomResource = new Provider(
+      this,
+      'EnableScanCustomResource',
+      {
+        onEventHandler: enableScanLambda,
+      }
+    )
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'CdkEcrEnhancedScanningQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    new CustomResource(this, 'EnableEnhancedScan', {
+      serviceToken: enableScanCustomResource.serviceToken,
+    })
+
+    // Grant the Lambda permission to modify the ECR scanning configuration
+    props.repository.grant(
+      enableScanLambda,
+      'ecr:PutRegistryScanningConfiguration'
+    )
   }
 }
