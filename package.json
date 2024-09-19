@@ -1,15 +1,14 @@
 {
   "name": "@michelangelo17/cdk-ecr-enhanced-scanning",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
     "lib/**/*.js",
-    "lib/**/*.d.ts",
-    "src/**/*.ts"
+    "lib/**/*.d.ts"
   ],
   "scripts": {
-    "build": "tsc && cp -R src lib/",
+    "build": "tsc",
     "watch": "tsc -w",
     "test": "jest"
   },
