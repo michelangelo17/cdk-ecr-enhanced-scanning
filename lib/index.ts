@@ -10,7 +10,7 @@ import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
 export interface EnhancedScanningProps {
   repository: IRepository
-  rules: Array<{
+  rules?: Array<{
     scanFrequency: 'SCAN_ON_PUSH' | 'CONTINUOUS_SCAN' | 'MANUAL'
     repositoryFilters: Array<{
       filter: string
