@@ -20,6 +20,9 @@ export interface EnhancedScanningProps {
 }
 
 export class EnhancedScanning extends Construct {
+  public readonly enableScanLambda: Function
+  public readonly enableScanCustomResource: Provider
+  public readonly customResource: CustomResource
   constructor(scope: Construct, id: string, props: EnhancedScanningProps) {
     super(scope, id)
 
