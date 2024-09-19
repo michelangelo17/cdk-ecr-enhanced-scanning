@@ -23,6 +23,7 @@ export class EnhancedScanning extends Construct {
   public readonly enableScanLambda: Function
   public readonly enableScanCustomResource: Provider
   public readonly customResource: CustomResource
+
   constructor(scope: Construct, id: string, props: EnhancedScanningProps) {
     super(scope, id)
 
@@ -54,7 +55,7 @@ export class EnhancedScanning extends Construct {
 
     const rules = JSON.stringify(props.rules || defaultRules)
 
-    const enableScanLambda = new Function(this, 'EnableScanLambda', {
+    this.enableScanLambda = new Function(this, 'EnableScanLambda', {
       runtime: Runtime.NODEJS_20_X,
       handler: 'index.handler',
       code: Code.fromAsset(tmpDir),
@@ -67,7 +68,7 @@ export class EnhancedScanning extends Construct {
     })
 
     // Add IAM permissions to the Lambda function
-    enableScanLambda.addToRolePolicy(
+    this.enableScanLambda.addToRolePolicy(
       new PolicyStatement({
         actions: [
           'ecr:PutRegistryScanningConfiguration',
@@ -87,16 +88,16 @@ export class EnhancedScanning extends Construct {
     )
 
     // Create a custom resource that invokes the Lambda function
-    const enableScanCustomResource = new Provider(
+    this.enableScanCustomResource = new Provider(
       this,
       'EnableScanCustomResource',
       {
-        onEventHandler: enableScanLambda,
+        onEventHandler: this.enableScanLambda,
       }
     )
 
-    new CustomResource(this, 'EnableEnhancedScan', {
-      serviceToken: enableScanCustomResource.serviceToken,
+    this.customResource = new CustomResource(this, 'EnableEnhancedScan', {
+      serviceToken: this.enableScanCustomResource.serviceToken,
     })
   }
 }
