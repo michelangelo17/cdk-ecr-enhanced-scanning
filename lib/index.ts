@@ -57,7 +57,12 @@ export class EnhancedScanning extends Construct {
     // Add IAM permissions to the Lambda function
     enableScanLambda.addToRolePolicy(
       new PolicyStatement({
-        actions: ['ecr:PutRegistryScanningConfiguration'],
+        actions: [
+          'ecr:PutRegistryScanningConfiguration',
+          'inspector2:Enable',
+          'inspector2:Disable',
+          'inspector2:ListAccountPermissions',
+        ],
         resources: ['*'],
         effect: Effect.ALLOW,
       })
@@ -75,11 +80,5 @@ export class EnhancedScanning extends Construct {
     new CustomResource(this, 'EnableEnhancedScan', {
       serviceToken: enableScanCustomResource.serviceToken,
     })
-
-    // Grant the Lambda permission to modify the ECR scanning configuration
-    props.repository.grant(
-      enableScanLambda,
-      'ecr:PutRegistryScanningConfiguration'
-    )
   }
 }

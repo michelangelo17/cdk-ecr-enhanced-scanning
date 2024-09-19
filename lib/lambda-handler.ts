@@ -1,8 +1,14 @@
-import { ECR } from 'aws-sdk'
+import { ECR, Inspector2 } from 'aws-sdk'
 
 const ecr = new ECR()
+const inspector = new Inspector2()
 
 export const handler = async () => {
+  console.log('Attempting to enable Amazon Inspector...')
+  await inspector.enable().promise()
+  console.log('Amazon Inspector enabled successfully.')
+
+  console.log('Attempting to enable enhanced scanning...')
   const params = {
     scanType: 'ENHANCED',
     rules: [
