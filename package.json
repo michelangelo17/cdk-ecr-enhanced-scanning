@@ -24,6 +24,19 @@
   "dependencies": {
     "aws-sdk": "^2.1691.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/michelangelo17/cdk-ecr-enhanced-scanning.git"
+  },
+  "keywords": [
+    "cdk",
+    "aws-cdk",
+    "construct",
+    "ecr",
+    "enhanced scanning",
+    "inspector",
+    "aws"
+  ],
   "author": {
     "name": "Michelangelo Markus",
     "email": "m@michelangelo.codes"
