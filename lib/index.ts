@@ -33,8 +33,8 @@ export class EnhancedScanning extends Construct {
       runtime: Runtime.NODEJS_20_X,
       handler: 'index.handler',
       code: Code.fromAsset(tmpDir),
-      timeout: Duration.seconds(30),
-      memorySize: 256,
+      timeout: Duration.seconds(300),
+      memorySize: 512,
     })
 
     // Create a custom resource that invokes the Lambda function
