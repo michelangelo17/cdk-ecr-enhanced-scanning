@@ -6,9 +6,16 @@ import { CustomResource, Duration } from 'aws-cdk-lib'
 import * as path from 'path'
 import * as fs from 'fs'
 import * as esbuild from 'esbuild'
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
+
+export interface EcrScanFilter {
+  filter: string
+  filterType: 'WILDCARD' | 'PREFIX_MATCH'
+}
 
 export interface EnhancedScanningProps {
   repository: IRepository
+  filters?: EcrScanFilter[]
 }
 
 export class EnhancedScanning extends Construct {
@@ -29,13 +36,32 @@ export class EnhancedScanning extends Construct {
       minify: true,
     })
 
+    const defaultFilter: EcrScanFilter = {
+      filter: props.repository.repositoryName,
+      filterType: 'PREFIX_MATCH',
+    }
+
+    const filters = props.filters || [defaultFilter]
+
     const enableScanLambda = new Function(this, 'EnableScanLambda', {
       runtime: Runtime.NODEJS_20_X,
       handler: 'index.handler',
       code: Code.fromAsset(tmpDir),
       timeout: Duration.seconds(300),
       memorySize: 512,
+      environment: {
+        FILTERS: JSON.stringify(filters),
+      },
     })
+
+    // Add IAM permissions to the Lambda function
+    enableScanLambda.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['ecr:PutRegistryScanningConfiguration'],
+        resources: ['*'],
+        effect: Effect.ALLOW,
+      })
+    )
 
     // Create a custom resource that invokes the Lambda function
     const enableScanCustomResource = new Provider(
