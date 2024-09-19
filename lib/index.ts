@@ -2,7 +2,7 @@ import { Construct } from 'constructs'
 import { Function, Runtime, Code } from 'aws-cdk-lib/aws-lambda'
 import { IRepository } from 'aws-cdk-lib/aws-ecr'
 import { Provider } from 'aws-cdk-lib/custom-resources'
-import { CustomResource, Duration } from 'aws-cdk-lib'
+import { Aws, CustomResource, Duration } from 'aws-cdk-lib'
 import * as path from 'path'
 import * as fs from 'fs'
 import * as esbuild from 'esbuild'
@@ -51,6 +51,7 @@ export class EnhancedScanning extends Construct {
       memorySize: 512,
       environment: {
         FILTERS: JSON.stringify(filters),
+        AWS_ACCOUNT_ID: Aws.ACCOUNT_ID,
       },
     })
 
