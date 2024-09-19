@@ -2,11 +2,12 @@ import { Construct } from 'constructs'
 import { Function, Runtime, Code } from 'aws-cdk-lib/aws-lambda'
 import { IRepository } from 'aws-cdk-lib/aws-ecr'
 import { Provider } from 'aws-cdk-lib/custom-resources'
-import { Aws, CustomResource, Duration } from 'aws-cdk-lib'
+import { Aws, CustomResource, Duration, Stack } from 'aws-cdk-lib'
 import * as path from 'path'
 import * as fs from 'fs'
 import * as esbuild from 'esbuild'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
+import { NagSuppressions } from 'cdk-nag'
 
 export interface EnhancedScanningProps {
   repository: IRepository
@@ -99,5 +100,57 @@ export class EnhancedScanning extends Construct {
     this.customResource = new CustomResource(this, 'EnableEnhancedScan', {
       serviceToken: this.enableScanCustomResource.serviceToken,
     })
+  }
+
+  public addNagSuppressions(stack: Stack) {
+    // Suppress warnings for EnableScanLambda
+    NagSuppressions.addResourceSuppressionsByPath(
+      stack,
+      `/${stack.stackName}/${this.node.id}/EnableScanLambda/ServiceRole/Resource`,
+      [
+        {
+          id: 'AwsSolutions-IAM4',
+          reason:
+            'AWS Lambda basic execution role is required for the Lambda function',
+        },
+      ]
+    )
+
+    NagSuppressions.addResourceSuppressionsByPath(
+      stack,
+      `/${stack.stackName}/${this.node.id}/EnableScanLambda/ServiceRole/DefaultPolicy/Resource`,
+      [
+        {
+          id: 'AwsSolutions-IAM5',
+          reason:
+            'Lambda function needs these permissions to enable ECR enhanced scanning',
+        },
+      ]
+    )
+
+    // Suppress warnings for EnableScanCustomResource
+    NagSuppressions.addResourceSuppressionsByPath(
+      stack,
+      `/${stack.stackName}/${this.node.id}/EnableScanCustomResource/framework-onEvent/ServiceRole/Resource`,
+      [
+        {
+          id: 'AwsSolutions-IAM4',
+          reason:
+            'AWS Lambda basic execution role is required for the custom resource provider',
+        },
+      ]
+    )
+
+    NagSuppressions.addResourceSuppressionsByPath(
+      stack,
+      `/${stack.stackName}/${this.node.id}/EnableScanCustomResource/framework-onEvent/ServiceRole/DefaultPolicy/Resource`,
+      [
+        {
+          id: 'AwsSolutions-IAM5',
+          reason:
+            'Custom resource provider needs these permissions to invoke the Lambda function',
+        },
+      ]
+    )
   }
 }

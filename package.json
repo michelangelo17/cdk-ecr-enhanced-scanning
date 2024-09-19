@@ -1,6 +1,6 @@
 {
   "name": "@michelangelo17/cdk-ecr-enhanced-scanning",
-  "version": "1.1.10",
+  "version": "1.2.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
@@ -17,6 +17,7 @@
     "@types/jest": "^29.5.12",
     "@types/node": "20.14.9",
     "aws-cdk-lib": "2.155.0",
+    "cdk-nag": "^2.28.195",
     "constructs": "^10.0.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.5",
