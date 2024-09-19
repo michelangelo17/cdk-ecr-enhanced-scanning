@@ -11,10 +11,10 @@ export const handler = async () => {
   }
 
   // Parse the filters from the environment variable or use the default passed by CDK
-  const filters = process.env.FILTERS ? JSON.parse(process.env.FILTERS) : false
+  const rules = process.env.RULES ? JSON.parse(process.env.RULES) : false
 
-  if (!filters) {
-    throw new Error('No filters provided')
+  if (!rules) {
+    throw new Error('No rules provided')
   }
 
   try {
@@ -30,12 +30,7 @@ export const handler = async () => {
     console.log('Attempting to enable enhanced scanning...')
     const params = {
       scanType: 'ENHANCED',
-      rules: [
-        {
-          repositoryFilters: filters,
-          scanFrequency: 'CONTINUOUS_SCAN',
-        },
-      ],
+      rules,
     }
 
     const result = await ecr.putRegistryScanningConfiguration(params).promise()

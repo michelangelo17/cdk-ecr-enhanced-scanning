@@ -8,14 +8,15 @@ import * as fs from 'fs'
 import * as esbuild from 'esbuild'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
-export interface EcrScanFilters {
-  filters: string[]
-  filterType: 'WILDCARD'
-}
-
 export interface EnhancedScanningProps {
   repository: IRepository
-  filters?: EcrScanFilters[]
+  rules: Array<{
+    scanFrequency: 'SCAN_ON_PUSH' | 'CONTINUOUS_SCAN' | 'MANUAL'
+    repositoryFilters: Array<{
+      filter: string
+      filterType: 'WILDCARD'
+    }>
+  }>
 }
 
 export class EnhancedScanning extends Construct {
@@ -36,12 +37,19 @@ export class EnhancedScanning extends Construct {
       minify: true,
     })
 
-    const defaultFilter: EcrScanFilters = {
-      filters: [props.repository.repositoryName],
-      filterType: 'WILDCARD',
-    }
+    const defaultRules = [
+      {
+        scanFrequency: 'CONTINUOUS_SCAN',
+        repositoryFilters: [
+          {
+            filter: props.repository.repositoryName,
+            filterType: 'WILDCARD',
+          },
+        ],
+      },
+    ]
 
-    const filters = props.filters || [defaultFilter]
+    const rules = JSON.stringify(props.rules || defaultRules)
 
     const enableScanLambda = new Function(this, 'EnableScanLambda', {
       runtime: Runtime.NODEJS_20_X,
@@ -50,7 +58,7 @@ export class EnhancedScanning extends Construct {
       timeout: Duration.seconds(300),
       memorySize: 512,
       environment: {
-        FILTERS: JSON.stringify(filters),
+        RULES: rules,
         AWS_ACCOUNT_ID: Aws.ACCOUNT_ID,
       },
     })
