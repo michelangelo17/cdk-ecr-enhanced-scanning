@@ -3,20 +3,17 @@ import { ECR, Inspector2 } from 'aws-sdk'
 const ecr = new ECR()
 const inspector = new Inspector2()
 
-export const handler = async () => {
-  const accountId = process.env.AWS_ACCOUNT_ID
+const accountId = process.env.AWS_ACCOUNT_ID
+const repositoryName = process.env.REPOSITORY_NAME
 
+export const handler = async () => {
   if (!accountId) {
     throw new Error('Unable to determine AWS account ID')
   }
 
-  // Parse the filters from the environment variable or use the default passed by CDK
-  const rules = process.env.RULES ? JSON.parse(process.env.RULES) : false
-
-  if (!rules) {
-    throw new Error('No rules provided')
+  if (!repositoryName) {
+    throw new Error('No repository name provided')
   }
-
   try {
     console.log('Attempting to enable Amazon Inspector...')
     await inspector
@@ -30,7 +27,17 @@ export const handler = async () => {
     console.log('Attempting to enable enhanced scanning...')
     const params = {
       scanType: 'ENHANCED',
-      rules,
+      rules: [
+        {
+          scanFrequency: 'CONTINUOUS_SCAN',
+          repositoryFilters: [
+            {
+              filter: repositoryName,
+              filterType: 'WILDCARD',
+            },
+          ],
+        },
+      ],
     }
 
     const result = await ecr.putRegistryScanningConfiguration(params).promise()

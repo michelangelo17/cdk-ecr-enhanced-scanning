@@ -11,13 +11,6 @@ import { NagSuppressions } from 'cdk-nag'
 
 export interface EnhancedScanningProps {
   repository: IRepository
-  rules?: Array<{
-    scanFrequency: 'SCAN_ON_PUSH' | 'CONTINUOUS_SCAN' | 'MANUAL'
-    repositoryFilters: Array<{
-      filter: string
-      filterType: 'WILDCARD'
-    }>
-  }>
 }
 
 export class EnhancedScanning extends Construct {
@@ -42,20 +35,6 @@ export class EnhancedScanning extends Construct {
       minify: true,
     })
 
-    const defaultRules = [
-      {
-        scanFrequency: 'CONTINUOUS_SCAN',
-        repositoryFilters: [
-          {
-            filter: props.repository.repositoryName,
-            filterType: 'WILDCARD',
-          },
-        ],
-      },
-    ]
-
-    const rules = JSON.stringify(props.rules || defaultRules)
-
     this.enableScanLambda = new Function(this, 'EnableScanLambda', {
       runtime: Runtime.NODEJS_20_X,
       handler: 'index.handler',
@@ -63,8 +42,8 @@ export class EnhancedScanning extends Construct {
       timeout: Duration.seconds(300),
       memorySize: 512,
       environment: {
-        RULES: rules,
         AWS_ACCOUNT_ID: Aws.ACCOUNT_ID,
+        REPOSITORY_NAME: props.repository.repositoryName,
       },
     })
 
@@ -72,9 +51,7 @@ export class EnhancedScanning extends Construct {
     this.enableScanLambda.addToRolePolicy(
       new PolicyStatement({
         actions: [
-          'ecr:PutRegistryScanningConfiguration',
           'inspector2:Enable',
-          'inspector2:Disable',
           'inspector2:ListAccountPermissions',
           'iam:CreateServiceLinkedRole',
         ],
@@ -85,6 +62,15 @@ export class EnhancedScanning extends Construct {
             'iam:AWSServiceName': 'inspector2.amazonaws.com',
           },
         },
+      })
+    )
+
+    // Add a scoped-down policy for PutRegistryScanningConfiguration
+    this.enableScanLambda.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['ecr:PutRegistryScanningConfiguration'],
+        resources: [props.repository.repositoryArn],
+        effect: Effect.ALLOW,
       })
     )
 
